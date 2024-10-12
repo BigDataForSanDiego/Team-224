@@ -1,0 +1,15 @@
+#include <studio.h>
+#include <studio.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_WIDGETS 5
+#define MAX_NAME_LENGTH 50
+#DEFINE MAX_VALUE_LENGTH 100
+
+typedef struct 
+{
+  char name[MAX_NAME_LENGTH];
+  char value[MAX_VALUE_LENGTH];
+  time_t last_updated;
+} Widget;
