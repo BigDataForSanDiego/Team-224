@@ -13,3 +13,19 @@ typedef struct
   char value[MAX_VALUE_LENGTH];
   time_t last_updated;
 } Widget;
+
+Widget widgets[MAX_WIDGETS];
+int widget_count =0;
+
+//data fetch
+void data_fetch (char *name, char *value)
+{
+  //read file 
+};
+}
+
+void create_widget(const char *name, const char *value)
+{
+  if (widget_count >= MAX_WIDGETS)
+  {
+    printf
