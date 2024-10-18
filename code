@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_ZIP_CODE 10 
+#define MAX_NAME_LENGTH 50
+#DEFINE MAX_VALUE_LENGTH 100
+
+typedef struct 
+{
+  char zipcode[6]; //Zipcode stored
+  char name[MAX_NAME_LENGTH]; //name of data
+  char value[MAX_VALUE_LENGTH]; //temp
+  char clean_enviornment[MAX_VALUE_LENGTH]; // clean enviorment
+  char water_contamination[MAX_VALUE_LENGTH]; // water contamination
+  char air_quality[MAS_VALUE_LENGTH]; //store air quality
+  time_t last_updated; //timestamp
+} HDATA;
+
+//array fixed size 
+HDATA health_data[MAX_ZIP_CODE];
+int health_data_count = 0;
+
+//data fetch
+void data_fetch (const chat *zipcode, char *name, char *value, *clean_enviornment, char *clean_water_contamination, char *air_quality)
+    FILE *file = fopen("health_data.csv", "r");// Open the file 
+    if (!file) {
+        // If the file cannot be opened, set error messages.
+        strcpy(name, "Error");
+        strcpy(value, "Unable to open data file");
+        return;
+    }
+
