@@ -3,38 +3,41 @@
 #include <string.h>
 #include <time.h>
 
-#define MAX_ZIP_CODE 10 
-#define MAX_NAME_LENGTH 50
-#DEFINE MAX_VALUE_LENGTH 100
+#define MAX_NAME_LENGTH 50       // Maximum length for name.
+#define MAX_VALUE_LENGTH 100     // Maximum length for value.
+#define MAX_ZIPCODES 10          // Maximum number of ZIP codes to track.
 
-typedef struct 
+typedef struct
 {
-  char zipcode[6]; //Zipcode stored
-  char name[MAX_NAME_LENGTH]; //name of data
-  char value[MAX_VALUE_LENGTH]; //temp
-  char clean_enviornment[MAX_VALUE_LENGTH]; // clean enviorment
-  char water_contamination[MAX_VALUE_LENGTH]; // water contamination
-  char air_quality[MAS_VALUE_LENGTH]; //store air quality
-  time_t last_updated; //timestamp
-} HDATA;
+    char zipcode[6];  // Store the associated ZIP code (up to 5 characters + null terminator).
+    char name[MAX_NAME_LENGTH];  // Store the name of the data.
+    char value[MAX_VALUE_LENGTH];  // Store health index and temperature information.
+    char clean_environment[MAX_VALUE_LENGTH];  // Store the "Clean Environment" data.
+    char clean_water_contamination[MAX_VALUE_LENGTH];  // Store water contamination info.
+    char air_quality[MAX_VALUE_LENGTH];  // Store air quality information.
+    time_t last_updated;  // Store the timestamp of the last update.
+} HealthData;
 
-//array fixed size 
-HDATA health_data[MAX_ZIP_CODE];
-int health_data_count = 0;
+// Fixed-size array for health data, with a maximum of MAX_ZIPCODES
+HealthData health_data[MAX_ZIPCODES];
+int health_data_count = 0;  // Current count of health data entries.
 
-//data fetch
-void data_fetch (const chat *zipcode, char *name, char *value, *clean_enviornment, char *clean_water_contamination, char *air_quality)
-    FILE *file = fopen("health_data.csv", "r");// Open the file 
-    if (!file) {
+void read_health_data(const char *zipcode, char *name, char *value, 
+                      char *clean_environment, char *clean_water_contamination, char *air_quality)
+{
+    // Open the CSV file for reading.
+    FILE *file = fopen("health_data.csv", "r");
+    if (!file)
+    {
         // If the file cannot be opened, set error messages.
         strcpy(name, "Error");
         strcpy(value, "Unable to open data file");
         return;
     }
 
-  char line[256];  // Buffer for reading each line from the CSV file.
+    char line[256];  // Buffer for reading each line from the CSV file.
     while (fgets(line, sizeof(line), file))
-      {
+    {
         char file_zipcode[6];
         double heat_index, temperature;
         char env[MAX_VALUE_LENGTH], water[MAX_VALUE_LENGTH], air[MAX_VALUE_LENGTH];
@@ -42,10 +45,10 @@ void data_fetch (const chat *zipcode, char *name, char *value, *clean_enviornmen
         // Parse the line, assuming CSV format.
         if (sscanf(line, "%5[^,],%lf,%lf,%49[^,],%49[^,],%49[^\n]", 
                    file_zipcode, &heat_index, &temperature, env, water, air) == 6)
-          {
+        {
             // Check if the current line's ZIP code matches the requested ZIP code.
-            if (strcmp(file_zipcode, zipcode) == 0) 
-              {
+            if (strcmp(file_zipcode, zipcode) == 0)
+            {
                 // Format and store the health data information in `name` and `value`.
                 snprintf(name, MAX_NAME_LENGTH, "Health Data (%s)", zipcode);
                 snprintf(value, MAX_VALUE_LENGTH, "Heat Index: %.1f°F, Temperature: %.1f°F", 
@@ -59,11 +62,11 @@ void data_fetch (const chat *zipcode, char *name, char *value, *clean_enviornmen
                 air_quality[MAX_VALUE_LENGTH - 1] = '\0';
                 fclose(file);  // Close the file after finding the data.
                 return;
-               }
             }
-          }
+        }
+    }
 
-    // If no ZIP code is found in the file, set default error messages.
+    // If no matching ZIP code is found in the file, set default error messages.
     strcpy(name, "Error");
     strcpy(value, "No data available for this ZIP code");
     strcpy(clean_environment, "N/A");
@@ -72,14 +75,16 @@ void data_fetch (const chat *zipcode, char *name, char *value, *clean_enviornmen
 
     fclose(file);  // Close the file.
 }
+
 // Function to create or update health data using the fixed-size array.
 void create_or_update_health_data(const char *zipcode, const char *name, const char *value, 
                                    const char *clean_environment, const char *clean_water_contamination, 
-                                   const char *air_quality) {
+                                   const char *air_quality)
+{
     // Check if the health data already exists in the fixed array.
-    for (int i = 0; i < health_data_count; i++) 
+    for (int i = 0; i < health_data_count; i++)
     {
-        if (strcmp(health_data[i].zipcode, zipcode) == 0) 
+        if (strcmp(health_data[i].zipcode, zipcode) == 0)
         {
             // Update the existing health data.
             strncpy(health_data[i].value, value, MAX_VALUE_LENGTH - 1);
@@ -91,8 +96,10 @@ void create_or_update_health_data(const char *zipcode, const char *name, const c
             return;  // Exit the function after updating.
         }
     }
- // If no health data was found for the given ZIP code and we still have space, create a new one.
-    if (health_data_count < MAX_ZIPCODES) {
+
+    // If no health data was found for the given ZIP code and we still have space, create a new one.
+    if (health_data_count < MAX_ZIPCODES)
+    {
         strncpy(health_data[health_data_count].zipcode, zipcode, 5);
         health_data[health_data_count].zipcode[5] = '\0';  // Null terminate the string.
         strncpy(health_data[health_data_count].name, name, MAX_NAME_LENGTH - 1);
@@ -104,15 +111,15 @@ void create_or_update_health_data(const char *zipcode, const char *name, const c
         strncpy(health_data[health_data_count].air_quality, air_quality, MAX_VALUE_LENGTH - 1);
         health_data[health_data_count].last_updated = time(NULL);  // Set the current time as the last updated time.
         health_data_count++;  // Increment the count of health data entries.
-    } 
-    else 
+    }
+    else
     {
         printf("Maximum number of health data entries reached.\n");
     }
 }
 
 // Function to update health data based on user input for a ZIP code.
-void update_health_data() 
+void update_health_data()
 {
     char zipcode[6];  // Buffer to store the ZIP code input by the user.
     printf("Enter ZIP code to update: ");
@@ -131,12 +138,13 @@ void update_health_data()
     // Create a new health data entry or update an existing one with the fetched data.
     create_or_update_health_data(zipcode, name, value, clean_environment, clean_water_contamination, air_quality);
 }
+
 // Function to display all health data entries.
 void display_health_data()
 {
     printf("\n--- Health Index by ZIP Code ---\n");
     for (int i = 0; i < health_data_count; i++)
-  {
+    {
         // Format the last updated time into a readable string.
         char time_str[26];
         ctime_r(&health_data[i].last_updated, time_str);
@@ -153,10 +161,11 @@ void display_health_data()
     }
     printf("-----------------------------\n");
 }
-int main() 
+
+int main()
 {
     // Main loop to handle user interactions.
-    while (1) 
+    while (1)
     {
         display_health_data();  // Show the current state of the health data.
 
@@ -170,17 +179,18 @@ int main()
         scanf("%d", &choice);  // Read user's choice.
 
         // Handle user input.
-        switch (choice) 
-          {
+        switch (choice)
+        {
             case 1:
                 update_health_data();  // Update or add new health data.
-            break;
+                break;
             case 2:
                 printf("Exiting...\n");
-                return 0; 
+                return 0;  // Exit the program.
             default:
-                printf("Invalid choice. Please try again.\n");  // invalid input.
-          }
+                printf("Invalid choice. Please try again.\n");  // Handle invalid input.
         }
-      return 0;  
-  }
+    }
+
+    return 0;  // Return 0 to indicate successful execution.
+}
